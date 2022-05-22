@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Fooyao 合约快速发送</title>
+</head>
+<body>
+
+<h1>快速Mint</h1>
+<li><a href="https://twitter.com/fooyao158">推特：@fooyao158</a></li>
+<label >复制交易哈希:</label>
+</br>
+<input type="text" id="txhash" name="name" size="100">
+</br></br>
+<button class="sendEthButton btn">发送交易</button>
+<script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js" type="application/javascript"></script>
+<script>
+    const provider = new ethers.providers.Web3Provider(ethereum)
+    const sendEthButton = document.querySelector('.sendEthButton');
+    let accounts = [];
+    async function change(_chainId) {
+        const chainId = ethereum.request({ method: 'eth_chainId' });
+        if(chainId !== _chainId){
+            await ethereum.request({ method: 'wallet_switchEthereumChain', params:[{chainId: '0x' + parseInt(_chainId, 10).toString(16)}]});
+        }
+    }
+    sendEthButton.addEventListener('click', () => {
+        const txhash = document.getElementById('txhash').value
+        console.log(txhash)
+        provider.getTransaction(txhash)
+            .then((res) => {
+                let input = res['data']
+                const from = res['from']
+                const to = res['to']
+                input = input.replace(from.slice(2,).toLowerCase(),accounts[0].slice(2,).toLowerCase())
+                ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: [
+                        {
+                            from: accounts[0],
+                            to: to,
+                            data: input
+                        },
+                    ],
+                }).then((txHash) => console.log(txHash)).catch((error) => console.error);
+                }
+            )
+            .catch((error) => console.error);
+    });
+
+    async function getAccount() {
+        accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+    }
+    getAccount();
+    change(1);
+</script>
+</body>
+</html>
